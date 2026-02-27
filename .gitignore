@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+venv_tts/
+env/
+ENV/
+
+# Environment variables
+.env
+*.env
+
+# Audio files
+backend/audio_storage/*.wav
+backend/audio_storage/*.mp3
+audio_storage/*.wav
+audio_storage/*.mp3
+
+# Metadata
+backend/metadata_storage/*.json
+metadata_storage/*.json
+
+# Voice models (large files)
+backend/voice_models/
+voice_models/
+
+# Voice samples (keep structure but ignore files)
+backend/voice_samples/**/*.mp3
+backend/voice_samples/**/*.mp4
+backend/voice_samples/**/*.wav
+voice_samples/**/*.mp3
+voice_samples/**/*.mp4
+voice_samples/**/*.wav
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Frontend build
+frontend/dist/
+frontend/build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+backend/temp_tts_script.py
+
+# Logs
+*.log
