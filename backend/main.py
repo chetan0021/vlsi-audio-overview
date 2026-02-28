@@ -187,13 +187,43 @@ class TextQuestionRequest(BaseModel):
 @app.post("/api/overview/generate")
 async def generate_audio_overview(request: GenerateOverviewRequest):
     """
-    Generate complete audio overview with dialogue and TTS
+    Generate complete audio overview with dialogue and TTS synthesis.
     
-    This endpoint:
-    1. Generates dialogue using ScriptGenerator
-    2. Synthesizes audio using TTS (requires Python 3.10 environment)
+    This endpoint orchestrates the complete audio overview generation process:
+    1. Generates educational dialogue using Google Gemini AI
+    2. Synthesizes audio for each segment using voice cloning (Coqui TTS)
     3. Saves audio files with metadata
     4. Returns segment list with audio URLs
+    
+    Args:
+        request: GenerateOverviewRequest containing:
+            - topic (str): The educational topic to generate dialogue about
+            - duration_minutes (int, optional): Target duration in minutes (default: 8)
+            - context (str, optional): Additional context to guide dialogue generation
+    
+    Returns:
+        dict: Response containing:
+            - success (bool): Whether generation succeeded
+            - overview_id (str): Unique identifier for this overview
+            - topic (str): The topic that was generated
+            - segments_count (int): Number of dialogue segments
+            - segments (list): List of segment objects with audio URLs
+            - tts_enabled (bool): Whether TTS synthesis is available
+            - note (str): Status message about audio generation
+    
+    Example:
+        ```json
+        {
+            "topic": "FSM Design Basics",
+            "duration_minutes": 2,
+            "context": "Brief introduction to FSM fundamentals"
+        }
+        ```
+    
+    Note:
+        - Audio synthesis requires Python 3.10 environment with TTS library
+        - Generation takes 1-2 minutes per segment
+        - Recommended: 5-7 segments (2-minute duration) for reasonable wait times
     """
     try:
         # Step 1: Generate dialogue using ScriptGenerator
@@ -290,13 +320,22 @@ async def generate_audio_overview(request: GenerateOverviewRequest):
 @app.get("/api/audio/{segment_id}")
 async def get_audio_file(segment_id: str):
     """
-    Serve audio file for a specific segment
+    Serve audio file for a specific dialogue segment.
+    
+    This endpoint retrieves and streams the audio file for a given segment ID.
+    Audio files are in WAV format with voice-cloned speech.
     
     Args:
-        segment_id: The segment identifier
-        
+        segment_id (str): The unique segment identifier (e.g., "overview_1234567890_0")
+    
     Returns:
-        Audio file (WAV format)
+        FileResponse: Audio file in WAV format
+        
+    Raises:
+        404: If segment not found or audio file doesn't exist
+    
+    Example:
+        GET /api/audio/overview_1234567890_0
     """
     try:
         # Load metadata to get file path

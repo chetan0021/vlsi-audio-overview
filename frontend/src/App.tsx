@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { AudioPlayer } from './components/AudioPlayer'
 import { TranscriptDisplay } from './components/TranscriptDisplay'
+import { LoadingIndicator } from './components/LoadingIndicator'
+import { ErrorDisplay } from './components/ErrorDisplay'
 
 interface DialogueSegment {
   segment_id: string
@@ -26,6 +28,7 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [dialogue, setDialogue] = useState<DialogueSegment[]>([])
   const [error, setError] = useState<string>('')
+  const [errorType, setErrorType] = useState<'api' | 'network' | 'audio' | 'general'>('general')
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0)
   
   // Question state
@@ -65,11 +68,14 @@ function App() {
       
       if (data.success) {
         setDialogue(data.segments)
+        setError('')
       } else {
         setError(data.error || 'Failed to generate dialogue')
+        setErrorType('api')
       }
     } catch (err) {
       setError('Network error: ' + (err as Error).message)
+      setErrorType('network')
     } finally {
       setIsGenerating(false)
     }
@@ -100,11 +106,14 @@ function App() {
       if (data.success) {
         setQuestionResponse(data.segments)
         setQuestion('')
+        setError('')
       } else {
         setError(data.error || 'Failed to get response')
+        setErrorType('api')
       }
     } catch (err) {
       setError('Network error: ' + (err as Error).message)
+      setErrorType('network')
     } finally {
       setIsAskingQuestion(false)
     }
@@ -144,12 +153,23 @@ function App() {
           </button>
           
           {error && (
-            <div className="error-message">
-              ❌ {error}
-            </div>
+            <ErrorDisplay 
+              error={error}
+              type={errorType}
+              onRetry={generateDialogue}
+              onDismiss={() => setError('')}
+            />
           )}
           
-          {dialogue.length > 0 && (
+          {isGenerating && (
+            <LoadingIndicator 
+              message="Generating dialogue and synthesizing audio..."
+              estimatedSeconds={300}
+              showProgress={true}
+            />
+          )}
+          
+          {dialogue.length > 0 && !isGenerating && (
             <div className="audio-overview-container">
               <AudioPlayer 
                 segments={dialogue}
@@ -207,6 +227,14 @@ function App() {
                 ))}
               </div>
             </div>
+          )}
+          
+          {isAskingQuestion && (
+            <LoadingIndicator 
+              message="Processing your question..."
+              estimatedSeconds={30}
+              showProgress={true}
+            />
           )}
         </div>
         
